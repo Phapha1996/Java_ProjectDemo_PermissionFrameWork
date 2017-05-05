@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE struts PUBLIC
+	"-//Apache Software Foundation//DTD Struts Configuration 2.3//EN"
+	"http://struts.apache.org/dtds/struts-2.3.dtd">
+
+<struts>
+	<!-- 常量配置 -->
+	 <constant name="struts.devMode" value="false" />
+	 <constant name="struts.i18n.encoding" value="utf-8"/>
+	 <constant name="struts.enable.DynamicMethodInvocation" value="true" /> 
+ 	 <!-- 缺省包 -->
+ 	 <package name="default" namespace="/" extends="struts-default">
+ 	 	<!-- 全局缺省页面 -->
+ 	 	<default-action-ref name="goLogin"></default-action-ref>
+		<!-- 全局结果集 -->
+ 	 	<global-results>
+ 	 		<!-- 帮跳转到index页面 -->
+ 	 		<result name="index" type="redirectAction">
+ 	 			<param name="namespace">/</param>
+ 	 			<param name="actionName">index</param>
+ 	 		</result>
+ 	 		<!-- 全局错误页面 -->
+ 	 		<result name="defeated">/defeated.jsp</result>
+ 	 	</global-results>
+ 	 	<!-- 全局异常映射 -->
+ 	 	<global-exception-mappings >
+ 	 		<exception-mapping result="defeated" exception="org.fage.exception.ServiceException"></exception-mapping>
+ 	 	</global-exception-mappings> 	 
+		<!-- 帮转向登录页面 -->
+		<action name="goLogin">
+			<result name="success">/WEB-INF/jsp/login.jsp</result>
+		</action> 	 
+ 	 	<!-- 主页面,登录成功之后才能访问当前页面-->
+ 	 	<action name="index" class="org.fage.controller.IndexAction">
+ 	 		<result name="success">/index.jsp</result>
+ 	 	</action>
+ 	 </package>
+ 	
+ 	
+ 	
+ 	 <!-- 控制层专门的Action包 -->
+ 	 <package name="Manager" extends="default" namespace="/controller"> 
+ 	 	<!-- 通配符Action -->
+ 	 	<action name="*_*" class="org.fage.controller.{1}Action" method="{2}">
+ 	 		<!-- 处理业务并且有界面的action返回success -->
+ 	 		<result name="success">/WEB-INF/jsp/{1}_{2}.jsp</result>
+ 	 		<!-- 返回全局页面list -->
+ 	 		<result name="page" type="chain">
+ 	 			<param name="namespace">/controller</param>
+ 	 			<param name="actionName">{1}_list</param>
+ 	 		</result>
+ 	 		<!-- 返回授权或者授予角色的UI页面-->
+ 	 		<result name="accredit" type="chain">
+ 	 			<param name="namespace">/controller</param>
+ 	 			<param name="actionName">{1}_accreditUI</param>
+ 	 		</result> 
+ 	 	</action>
+ 	 	
+ 	 </package>
+ 	
+ 	 
+
+</struts>

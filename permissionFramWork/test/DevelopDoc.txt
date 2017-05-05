@@ -1,0 +1,143 @@
+开发权限系统：
+********2016-11-30所做：
+一、搭建开发环境
+（1）导包
+	------JavaEE包（Eclipse自动导入）
+	------JRE（Eclipse自动导入）
+	------导入Struts2.3依赖的Jar（曾经出现过问题，用户自定义的Jar不管用，需要我自己从新导入lib）
+	------导入Hibernate依赖的Jar（没有出现过问题）
+	------导入C3p0的两个Jar包以及Hibernate连接C3p0的Final.Jar（曾经遇到过问题，配置然后运行出现异常就是因为没有这个Jar）
+
+（2）修改配置
+	------修改web.xml，将核心过滤器配上
+	------修改struts.xml，配置常量以及测试Helloworld，测试struts利用是否通过
+	------修改Hibernate配置，配置数据库连接以及c3p0数据库连接池，并且测试Hibernate是否通过
+
+（3）建立数据库表(19:00)
+	------Privilege表：
+	create table t_privilege(
+	id int(11) primary key auto_increment,
+		name varchar(40) not null unique,
+		discription varchar(255),
+		createDate date
+	)character set utf8;
+	字段词汇：
+		t_privilege:权限表
+		name：权限名字
+		discription：权限描述
+		createDate：权限创建日期
+-----------------------------------------------	
+
+	------Role表：	
+	create table t_role(
+	id int(11) primary key auto_increment,
+		name varchar(40) not null,
+		discription varchar(255)
+	)character set utf8;
+	字段词汇：
+		t_role：角色表
+		name：角色描述
+		discription：角色解释描述
+		
+-----------------------------------------------	
+
+	------User表：
+	create table t_user(
+		id int(11) primary key auto_increment,
+		username varchar(11) not null,
+		password varchar(11) not null,
+		phone int(11),
+		department_id int, 
+		foreign key(department_id) references t_department(id)
+	)character set utf8;
+	词汇解释：
+		username：用户名
+		password：用户密码
+		phone：电话手机号
+		department_id：所属部门的id号
+-----------------------------------------------	
+	
+	------department表：
+	create table t_department(
+		id int(11) primary key auto_increment,
+		name varchar(40) not null,
+		discription varchar(255),
+	)character set utf8;
+	词汇解释：
+		name：部门名字
+		discription：部门的描述
+	
+-----------------------------------------------	
+	------Privilege与Role中间表
+	create table p_r(
+		privilege_id int(11) ,
+		role_id int(11),
+		primary key(privilege_id,role_id),
+		foreign key(privilege_id) references t_privilege(id),
+		foreign key(role_id) references t_role(id)
+	)character set utf8;
+	
+	-------Role与User中间表
+	create table r_u(
+		role_id int(11) ,
+		user_id int(11),
+		primary key(role_id,user_id),
+		foreign key(role_id) references t_role(id),
+		foreign key(user_id) references t_user(id)
+	)character set utf8;
+---------------------------------------------
+	-------Admin表
+	create table t_admin(
+		id int(11) primary key auto_increment,
+		username varchar(20) not null unique,
+		password varchar(20) not null,
+		position varchar(20) not null unique
+	)character set utf8;
+
+	
+	
+二、开始开发
+	********2016-12-1 19:28-23:00
+		1.Dao层的Privilege
+		2.Service层的privilege
+		3.web层以及ui层的Privilege	
+	-------遇到问题汇总：
+		1.遇到了导包问题，user自定义的userLibrary没有起作用：从新导入了所有需要的第三方开发包
+		
+		2.struts的OGNL表达式，查询耗时较长：从新参考bbs项目
+		
+		3.发现异常并不在后台输出：解决方案（关掉struts的开发模式）
+		
+		4.发现了前端传一堆的Privilege的id，Action中可以用一个List<Privilege>直接接收的到元素
+		解决了之前只能用数组接收的冲：充分表达了OGNL的重要性（以及过程中表单参数是怎么进行转化、复制给Action的属性的）
+		
+		5.发现了在转发回前一个页面的过程中，可以用result的chain属性来进行跳转，保证请求过程中数据存在的完整性
+		
+		6.（重点）
+			（1）ActionContext是与线程绑定的，只要struts遇到一个新的请求，会判断这个开辟的线程里是否有ActionContext绑定，如果有
+				就清除ActionContext里面的信息，如果没有，就新创建一个ActionContext；ActionContext包含ValueStack包含Action
+			（1.1）struts的每个请求都在一个单独的线程中；所以，其实ActionContext维护的信息，也只有在请求范围内可以访问得到
+			（2）Tomcat会开辟一个线程池，每次来一个request就会从池中拿出一个线程来访问，当请求结束之后又会把这个线程还给Tomcat线程池
+			（3）ValueStack与目标Action的属性息息相关，目标Action的属性是ValueStack的一部分，所以OGNL可以从中取出
+		
+		7.开发过程中的异常链不能断开，Dao异常提示Service并给出异常信息，Service在抛出自身的异常给Action，Action接收到后根据异常信息
+		   做出相应的返回视图的处理
+		
+		8.解决了事务管理的代码不侵入Service层（层与层之间可以高度解耦），未学习Spring之前，动态代理技术可以实现
+		Dao的细粒度应该尽可能的小，让Service可以方便的对Dao的方法进行有效的组合
+		
+		9.意外的发现load方法懒加载不能使用，还未找到解决办法
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	

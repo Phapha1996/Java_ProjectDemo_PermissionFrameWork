@@ -1,0 +1,3 @@
+﻿# permissionFrameWork
+权限系统又来啦！不过这个是Struts+Hibernate的实现版本哦，里面Service层使用动态代理技术实现了事务
+剥离到Service，很棒的学习程序
